@@ -3,5 +3,23 @@
     "console.table": "^0.10.0",
     "inquirer": "^8.2.4",
     "mysql2": "^2.3.3"
-  }
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "name": "employee-tracker",
+  "description": "A MySQL-based command line application for working with and exploring your company's records.",
+  "version": "1.0.0",
+  "main": "server.js",
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FinnStitcher/employee-tracker.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/FinnStitcher/employee-tracker/issues"
+  },
+  "homepage": "https://github.com/FinnStitcher/employee-tracker#readme"
 }
