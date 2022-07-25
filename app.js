@@ -2,6 +2,7 @@ const inquirer = require('inquirer');
 
 const db = require('./db/connection');
 const sql = require('./db/sql.js');
+const getListItems = require('./utils/getListItems');
 
 const dummyData = {
     employeeInvalidManager: ['Sarah', 'Page', 9, 99],
@@ -54,26 +55,27 @@ inquirer.prompt([
     },
     {
         type: 'input',
-        name: 'employForename',
+        name: 'employeeForename',
         message: 'What is the employee\'s first name?',
         when: prev => prev.select === 'Add Employee'
     },
     {
         type: 'input',
-        name: 'employSurname',
+        name: 'employeeSurname',
         message: 'What is the employee\'s last name?',
         when: prev => prev.select === 'Add Employee'
     },
     {
         type: 'input', //temp
-        name: 'employRole',
+        name: 'employeeRole',
         message: 'What is the employee\'s role?',
         when: prev => prev.select === 'Add Employee'
     },
     {
-        type: 'input', //temp
-        name: 'employManager',
+        type: 'list',
+        name: 'employeeManager',
         message: 'Who is the employee\'s manager?',
+        choices: ['dummy text'],
         when: prev => prev.select === 'Add Employee'
     },
     {
@@ -88,4 +90,32 @@ inquirer.prompt([
         message: 'What should their role be updated to?',
         when: prev => prev.select === 'Update Employee Role'
     }
-]);
+])
+.then(results => {
+    
+})
+// .then(results => {
+//     switch (results.select) {
+//         case 'Add Employee': {
+//             const params = [results.employeeForename, results.employeeSurname, results.employeeRole, results.employeeManager];
+//         }
+//         case 'View All Employees': {
+
+//         }
+//         case 'Update Employee Role': {
+
+//         }
+//         case 'Add Role': {
+
+//         }
+//         case 'View All Roles': {
+
+//         }
+//         case 'Add Department': {
+
+//         }
+//         case 'View All Departments': {
+
+//         }
+//     }
+// });
