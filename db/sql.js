@@ -1,9 +1,6 @@
 module.exports = {
-	viewAllNames: `SELECT department.name, role.title, employee.first_name, employee.last_name
-FROM department
-JOIN role ON department.id = role.department_id
-JOIN employee ON role.id = employee.role_id`,
 	viewDept: `SELECT * FROM department`,
+    viewDeptByName: `SELECT * FROM department WHERE name = ?`,
 	addDept: `INSERT INTO department (name) VALUES (?)`,
 	viewRole: `SELECT role.id, role.title, department.name AS department, salary
 FROM role
