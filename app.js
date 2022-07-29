@@ -2,7 +2,6 @@ const inquirer = require("inquirer");
 
 const db = require("./db/connection");
 const sql = require("./db/sql.js");
-const printQueries = require('./utils/printQueries');
 
 const dummyData = {
 	employeeInvalidManager: ["Sarah", "Page", 9, 99],
@@ -138,48 +137,91 @@ function runPrompts (lists) {
         // breaking apart results into more manageable bits
         const {select, ...submitToDb} = results;
 
-        const printOptions = ['View All Departments', 'View All Roles', 'View All Employees'];
-        const changeOptions = ['Add Department', 'Add Role', 'Add Employee', 'Update Employee Role'];
-
-        switch (select) {
-            case select === 'View All Departments': {
-                db.query(sql.viewDept, (err, rows) => {
-                    if (err) {
-                        console.log(err);
-                        return;
-                    }
-                    console.table(rows);
-                });                
-            }
-            case select === 'View All Roles': {
-                db.query(sql.viewRole, (err, rows) => {
-                    if (err) {
-                        console.log(err);
-                        return;
-                    }
-                    console.table(rows);
-                });
-            }
-            case select === 'View All Employees': {
-                db.query(sql.viewEmployees, (err, rows) => {
-                    if (err) {
-                        console.log(err);
-                        return;
-                    }
-                    console.table(rows);
-                }); 
-            }
+        // oh boy if statements
+        // for some reason a switch statement didn't work
+        if (select === 'View All Departments') {
+            db.query(sql.viewDept, (err, rows) => {
+                if (err) {
+                    console.log(err);
+                    return;
+                }
+                console.table(rows);
+            });
         }
-
-        // if a print option was selected
-        if (printOptions.indexOf(select) !== -1) {
-            if (select === 'View All Departments') {
-
-            }
-        // if a change options was selected
+        if (select === 'View All Roles') {
+            db.query(sql.viewRole, (err, rows) => {
+                if (err) {
+                    console.log(err);
+                    return;
+                }
+                console.table(rows);
+            });
         }
-        if (changeOptions.indexOf(select) !== -1) {
-        };
+        if (select === 'View All Employees') {
+            db.query(sql.viewEmployee, (err, rows) => {
+                if (err) {
+                    console.log(err);
+                    return;
+                }
+                console.table(rows);
+            }); 
+        }
+        if (select === 'Add Department') {
+            db.query(sql.addDept, submitToDb, (err) => {
+                if (err) {
+                    console.log(err);
+                    return;
+                };
+                console.log('New department was added.');
+            });
+        }
+        if (select === 'Add Role') {
+            // get the id of the department this role belongs to
+            // what we're doing here is splitting the roleDept property, taking the first item in the new array (the number)
+            // and parsing it into an integer
+            const deptId = parseInt(submitToDb.roleDept.split(' - ')[0]);
+            submitToDb.roleDept = deptId;
+
+            db.query(sql.addRole, submitToDb, (err) => {
+                if (err) {
+                    console.log(err);
+                    return;
+                }
+                console.log('New role was added.');
+            })
+        }
+        if (select === 'Add Employee') {
+            // getting an integer id for the role out of the string its in
+            const roleId = parseInt(submitToDb.employeeRole.split(' - ')[0]);
+            submitToDb.employeeRole = roleId;
+
+            // getting an integer id for the manager
+            const managerId = parseInt(submitToDb.employeeManager.split(' - ')[0]);
+            submitToDb.employeeManager = managerId;
+
+            db.query(sql.addEmployee, submitToDb, (err) => {
+                if (err) {
+                    console.log(err);
+                    return;
+                }
+                console.log('New employee was added.');
+            })
+        }
+        if (select === 'Update Employee Role') {
+            // again, getting integer ids out of the strings they're in
+            const employeeId = parseInt(submitToDb.updateRoleName.split(' - ')[0]);
+            const roleId = parseInt(submitToDb.updateRoleRole.split(' - ')[0]);
+
+            // the placeholders in the query are in the opposite order of the relevant prompts
+            // so we don't update submitToDb, we just put an array right in there
+            db.query(sql.updateEmployeeRole, [roleId, employeeId], (err) => {
+                if (err) {
+                    console.log(err);
+                    return;
+                }
+                console.log('That employee has been updated.');
+            })
+        }
 
         return select;
     })
