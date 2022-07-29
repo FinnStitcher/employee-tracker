@@ -2,19 +2,16 @@ const inquirer = require("inquirer");
 
 const db = require("./db/connection");
 const sql = require("./db/sql.js");
+const printQueries = require('./utils/printQueries');
 
 const dummyData = {
 	employeeInvalidManager: ["Sarah", "Page", 9, 99],
 };
 // i'll come back to the manager test
 
-// i want to be able to generate lists of departments/employees/roles that can be selected from but making the promises work is kicking my ass
-// loose idea of another way to get it to work:
-// - getLists() takes a parameter called listData
-// - include multiple if statements checking if any of the three properties in listData are empty
-// - if deptList is null, run a promise query, with a then statement that takes the result and puts it in listData.deptList
-// - so on and so forth
-// - if none of them are null, call runPrompts()
+// getLists() calls runPrompts()
+// maybe i could or should restructure this to use a then() statement, but that can come later
+// making this work as-is took long enough
 
 function getLists (listData = {}) {
     // might not need all these if statements but honestly whatever i just want this to work
@@ -22,11 +19,11 @@ function getLists (listData = {}) {
         // add property
         listData.deptList = [];
         // run query
-        // hopefully this works
         db.promise().query(sql.viewDept).then(([rows]) => {
             const list = rows.map(element => `${element.id} - ${element.name}`);
             listData.deptList = [...list];
 
+            // loop
             getLists(listData);
         });
     } else if (!listData.roleList) {
@@ -44,6 +41,7 @@ function getLists (listData = {}) {
         db.promise().query(sql.viewEmployee).then(([rows]) => {
             const list = rows.map(element => `${element.id} - ${element.first_name} ${element.last_name}`);
             listData.employeeList = [...list];
+            listData.employeeList.push('N/A');
 
             getLists(listData);
         });
@@ -51,8 +49,6 @@ function getLists (listData = {}) {
         runPrompts(listData);
     };
 };
-
-getLists();
 
 function runPrompts (lists) {
     return inquirer.prompt([
@@ -137,18 +133,64 @@ function runPrompts (lists) {
             when: prev => prev.select === 'Update Employee Role'
         }
     ])
-    // do stuff and recurse
+    // queries and stuff are made here
     .then(results => {
+        // breaking apart results into more manageable bits
+        const {select, ...submitToDb} = results;
+
         const printOptions = ['View All Departments', 'View All Roles', 'View All Employees'];
         const changeOptions = ['Add Department', 'Add Role', 'Add Employee', 'Update Employee Role'];
 
-        // if a print option was selected
-        if (printOptions.indexOf(results.select) !== -1) {
-            runPrompts();
-        } else if (changeOptions.indexOf(results.select) !== -1) {
-            getLists();
-        } else {
-            console.log('Ending program');
+        switch (select) {
+            case select === 'View All Departments': {
+                db.query(sql.viewDept, (err, rows) => {
+                    if (err) {
+                        console.log(err);
+                        return;
+                    }
+                    console.table(rows);
+                });                
+            }
+            case select === 'View All Roles': {
+                db.query(sql.viewRole, (err, rows) => {
+                    if (err) {
+                        console.log(err);
+                        return;
+                    }
+                    console.table(rows);
+                });
+            }
+            case select === 'View All Employees': {
+                db.query(sql.viewEmployees, (err, rows) => {
+                    if (err) {
+                        console.log(err);
+                        return;
+                    }
+                    console.table(rows);
+                }); 
+            }
         }
+
+        // if a print option was selected
+        if (printOptions.indexOf(select) !== -1) {
+            if (select === 'View All Departments') {
+
+            }
+        // if a change options was selected
+        }
+        if (changeOptions.indexOf(select) !== -1) {
+        };
+
+        return select;
+    })
+    // recursion happens here
+    .then(selection => {
+        if (selection !== "Quit") {
+            getLists()
+        } else {
+            console.log('Ending program.');
+        };
     });
 };
+
+getLists();
