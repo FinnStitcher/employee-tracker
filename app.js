@@ -3,32 +3,27 @@ const inquirer = require("inquirer");
 const db = require("./db/connection");
 const sql = require("./db/sql.js");
 
-const questions = require('./lib/questions');
 const {validateString, validateSalary} = require('./lib/validation');
 
 // getLists() calls runPrompts()
 // maybe i could or should restructure this to use a then() statement, but that can come later
 // making this work as-is took long enough
 
-function getLists (listData = {}) {
-    // might not need all these if statements but honestly whatever i just want this to work
-    if (!listData.deptList) {
-        // add property
-        listData.deptList = [];
-        // run query
-        db.promise().query(sql.viewDept).then(([rows]) => {
-            const list = rows.map(element => `${element.id} - ${element.name}`);
-            listData.deptList = [...list];
+console.log('Loading...');
 
-            // loop
+function getLists (listData = {}) {
+    if (!listData.deptList) {
+        listData.deptList = [];
+
+        db.promise().query(sql.viewDept).then(([rows]) => {
+            listData.deptList = rows.map(element => `${element.id} - ${element.name}`);
             getLists(listData);
         });
     } else if (!listData.roleList) {
         listData.roleList = [];
 
         db.promise().query(sql.viewRole).then(([rows]) => {
-            const list = rows.map(element => `${element.id} - ${element.title}`);
-            listData.roleList = [...list];
+            listData.roleList = rows.map(element => `${element.id} - ${element.title}`);
 
             getLists(listData);
         });
@@ -36,8 +31,7 @@ function getLists (listData = {}) {
         listData.employeeList = [];
 
         db.promise().query(sql.viewEmployee).then(([rows]) => {
-            const list = rows.map(element => `${element.id} - ${element.first_name} ${element.last_name}`);
-            listData.employeeList = [...list];
+            listData.employeeList = rows.map(element => `${element.id} - ${element.first_name} ${element.last_name}`);
             listData.employeeList.push('N/A');
 
             getLists(listData);
@@ -47,8 +41,95 @@ function getLists (listData = {}) {
     };
 };
 
+// i would love to import that big block of questions from somewhere else, but i'm not sure i can without breaking things
 function runPrompts (lists) {
-    return inquirer.prompt(questions)
+    return inquirer.prompt([
+        {
+            type: "list",
+            name: "select",
+            message: "What would you like to do?",
+            choices: [
+                "Add Employee",
+                "View All Employees",
+                "Update Employee Role",
+                "Add Role",
+                "View All Roles",
+                "Add Department",
+                "View All Departments",
+                "Quit",
+            ],
+        },
+        {
+            type: "input",
+            name: "deptName",
+            message: "What is the name of the department?",
+            validate: (answer) => validateString(answer),
+            when: (prev) => prev.select === "Add Department",
+        },
+        {
+            type: "input",
+            name: "roleName",
+            message: "What is the name of the role?",
+            validate: (answer) => validateString(answer),
+            when: (prev) => prev.select === "Add Role",
+        },
+        {
+            type: "input",
+            name: "roleSalary",
+            message: "What is the salary of the role?",
+            validate: (answer) => validateSalary(answer),
+            when: (prev) => prev.select === "Add Role",
+        },
+        {
+            type: "list",
+            name: "roleDept",
+            message: "What department does the role belong to?",
+            choices: lists.deptList,
+            when: (prev) => prev.select === "Add Role",
+        },
+        {
+            type: "input",
+            name: "employeeForename",
+            message: "What is the employee's first name?",
+            validate: (answer) => validateString(answer),
+            when: (prev) => prev.select === "Add Employee",
+        },
+        {
+            type: "input",
+            name: "employeeSurname",
+            message: "What is the employee's last name?",
+            validate: (answer) => validateString(answer),
+            when: (prev) => prev.select === "Add Employee",
+        },
+        {
+            type: "list",
+            name: "employeeRole",
+            message: "What is the employee's role?",
+            choices: lists.roleList,
+            when: (prev) => prev.select === "Add Employee",
+        },
+        {
+            type: "list",
+            name: "employeeManager",
+            message: "Who is the employee's manager?",
+            choices: lists.employeeList,
+            when: (prev) => prev.select === "Add Employee",
+        },
+        {
+            type: "list",
+            name: "updateRoleName",
+            message: "Which employee do you want to update?",
+            choices: lists.employeeList,
+            when: (prev) => prev.select === "Update Employee Role",
+        },
+        {
+            type: "list",
+            name: "updateRoleRole",
+            message: "What should their role be updated to?",
+            choices: lists.roleList,
+            when: (prev) => prev.select === "Update Employee Role",
+        },
+    ])
     // queries and stuff are made here
     .then(results => {
         // breaking apart results into more manageable parts
