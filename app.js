@@ -7,6 +7,34 @@ const sql = require("./db/sql.js");
 // maybe i could or should restructure this to use a then() statement, but that can come later
 // making this work as-is took long enough
 
+function validateString (string) {
+    const parsedAsInt = parseInt(string);
+
+    if (string.length > 30) {
+        console.log(`
+        This string is too long.`);
+        return false;
+    } else if (isNaN(parsedAsInt) === false) {
+        console.log(`
+        Please enter a string, not a number.`);
+        return false;
+    } else {
+        return true;
+    };
+};
+
+function validateSalary (number) {
+    const parsedAsInt = parseInt(number);
+
+    if (isNaN(parsedAsInt) === true) {
+        console.log(`
+        Please enter a number.`);
+        return false;
+    } else {
+        return true;
+    }
+};
+
 function getLists (listData = {}) {
     // might not need all these if statements but honestly whatever i just want this to work
     if (!listData.deptList) {
@@ -65,18 +93,21 @@ function runPrompts (lists) {
             type: 'input',
             name: 'deptName',
             message: 'What is the name of the department?',
+            validate: answer => validateString(answer),
             when: prev => prev.select === 'Add Department'
         },
         {
             type: 'input',
             name: 'roleName',
             message: 'What is the name of the role?',
+            validate: answer => validateString(answer),
             when: prev => prev.select === 'Add Role'
         },
         {
             type: 'input',
             name: 'roleSalary',
             message: 'What is the salary of the role?',
+            validate: answer => validateSalary(answer),
             when: prev => prev.select === 'Add Role'
         },
         {
@@ -90,12 +121,14 @@ function runPrompts (lists) {
             type: 'input',
             name: 'employeeForename',
             message: 'What is the employee\'s first name?',
+            validate: answer => validateString(answer),
             when: prev => prev.select === 'Add Employee'
         },
         {
             type: 'input',
             name: 'employeeSurname',
             message: 'What is the employee\'s last name?',
+            validate: answer => validateString(answer),
             when: prev => prev.select === 'Add Employee'
         },
         {
@@ -162,7 +195,7 @@ function runPrompts (lists) {
             }); 
         }
         if (select === 'Add Department') {
-            db.query(sql.addDept, submitToDb, (err) => {
+            db.query(sql.addDept, [submitToDb.deptName], (err) => {
                 if (err) {
                     console.log(err);
                     return;
