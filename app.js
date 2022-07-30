@@ -199,7 +199,13 @@ function runPrompts (lists) {
 
             // getting an integer id for the manager
             const managerId = parseInt(submitToDb.employeeManager.split(' - ')[0]);
-            submitToDb.employeeManager = managerId;
+            console.log(managerId);
+            console.log(isNaN(managerId));
+            if (isNaN(managerId)) {
+                submitToDb.employeeManager = null;
+            } else {
+                submitToDb.employeeManager = managerId;
+            }
 
             db.query(sql.addEmployee, Object.values(submitToDb), (err) => {
                 if (err) {
