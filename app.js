@@ -199,8 +199,6 @@ function runPrompts (lists) {
 
             // getting an integer id for the manager
             const managerId = parseInt(submitToDb.employeeManager.split(' - ')[0]);
-            console.log(managerId);
-            console.log(isNaN(managerId));
             if (isNaN(managerId)) {
                 submitToDb.employeeManager = null;
             } else {
