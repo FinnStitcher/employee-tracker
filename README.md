@@ -9,4 +9,10 @@ Download the files in this repository, or clone it to your machine. Using your p
 
 ## How to Use
 
+Run `npm start` in the project directory to start the app. Follow the prompts on screen.
+
 ## Demonstration
+
+(Forgot to remove some console.logs before filming this, oops.)
+
+https://www.awesomescreenshot.com/video/10252466?key=28af628435843d14c539d937a4191ac2
