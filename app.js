@@ -3,11 +3,6 @@ const inquirer = require("inquirer");
 const db = require("./db/connection");
 const sql = require("./db/sql.js");
 
-const dummyData = {
-	employeeInvalidManager: ["Sarah", "Page", 9, 99],
-};
-// i'll come back to the manager test
-
 // getLists() calls runPrompts()
 // maybe i could or should restructure this to use a then() statement, but that can come later
 // making this work as-is took long enough
@@ -134,7 +129,7 @@ function runPrompts (lists) {
     ])
     // queries and stuff are made here
     .then(results => {
-        // breaking apart results into more manageable bits
+        // breaking apart results into more manageable parts
         const {select, ...submitToDb} = results;
 
         // oh boy if statements
@@ -182,7 +177,11 @@ function runPrompts (lists) {
             const deptId = parseInt(submitToDb.roleDept.split(' - ')[0]);
             submitToDb.roleDept = deptId;
 
-            db.query(sql.addRole, submitToDb, (err) => {
+            // convert salary into an integer
+            const salary = parseInt(submitToDb.roleSalary);
+            submitToDb.roleSalary = salary;
+
+            db.query(sql.addRole, Object.values(submitToDb), (err) => {
                 if (err) {
                     console.log(err);
                     return;
@@ -199,7 +198,7 @@ function runPrompts (lists) {
             const managerId = parseInt(submitToDb.employeeManager.split(' - ')[0]);
             submitToDb.employeeManager = managerId;
 
-            db.query(sql.addEmployee, submitToDb, (err) => {
+            db.query(sql.addEmployee, Object.values(submitToDb), (err) => {
                 if (err) {
                     console.log(err);
                     return;
