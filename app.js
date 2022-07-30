@@ -3,37 +3,12 @@ const inquirer = require("inquirer");
 const db = require("./db/connection");
 const sql = require("./db/sql.js");
 
+const questions = require('./lib/questions');
+const {validateString, validateSalary} = require('./lib/validation');
+
 // getLists() calls runPrompts()
 // maybe i could or should restructure this to use a then() statement, but that can come later
 // making this work as-is took long enough
-
-function validateString (string) {
-    const parsedAsInt = parseInt(string);
-
-    if (string.length > 30) {
-        console.log(`
-        This string is too long.`);
-        return false;
-    } else if (isNaN(parsedAsInt) === false) {
-        console.log(`
-        Please enter a string, not a number.`);
-        return false;
-    } else {
-        return true;
-    };
-};
-
-function validateSalary (number) {
-    const parsedAsInt = parseInt(number);
-
-    if (isNaN(parsedAsInt) === true) {
-        console.log(`
-        Please enter a number.`);
-        return false;
-    } else {
-        return true;
-    }
-};
 
 function getLists (listData = {}) {
     // might not need all these if statements but honestly whatever i just want this to work
@@ -73,93 +48,7 @@ function getLists (listData = {}) {
 };
 
 function runPrompts (lists) {
-    return inquirer.prompt([
-        {
-            type: 'list',
-            name: 'select',
-            message: 'What would you like to do?',
-            choices: [
-                'Add Employee',
-                'View All Employees',
-                'Update Employee Role',
-                'Add Role',
-                'View All Roles',
-                'Add Department',
-                'View All Departments',
-                'Quit'
-            ]
-        },
-        {
-            type: 'input',
-            name: 'deptName',
-            message: 'What is the name of the department?',
-            validate: answer => validateString(answer),
-            when: prev => prev.select === 'Add Department'
-        },
-        {
-            type: 'input',
-            name: 'roleName',
-            message: 'What is the name of the role?',
-            validate: answer => validateString(answer),
-            when: prev => prev.select === 'Add Role'
-        },
-        {
-            type: 'input',
-            name: 'roleSalary',
-            message: 'What is the salary of the role?',
-            validate: answer => validateSalary(answer),
-            when: prev => prev.select === 'Add Role'
-        },
-        {
-            type: 'list',
-            name: 'roleDept',
-            message: 'What department does the role belong to?',
-            choices: lists.deptList,
-            when: prev => prev.select === 'Add Role'
-        },
-        {
-            type: 'input',
-            name: 'employeeForename',
-            message: 'What is the employee\'s first name?',
-            validate: answer => validateString(answer),
-            when: prev => prev.select === 'Add Employee'
-        },
-        {
-            type: 'input',
-            name: 'employeeSurname',
-            message: 'What is the employee\'s last name?',
-            validate: answer => validateString(answer),
-            when: prev => prev.select === 'Add Employee'
-        },
-        {
-            type: 'list',
-            name: 'employeeRole',
-            message: 'What is the employee\'s role?',
-            choices: lists.roleList,
-            when: prev => prev.select === 'Add Employee'
-        },
-        {
-            type: 'list',
-            name: 'employeeManager',
-            message: 'Who is the employee\'s manager?',
-            choices: lists.employeeList,
-            when: prev => prev.select === 'Add Employee'
-        },
-        {
-            type: 'list',
-            name: 'updateRoleName',
-            message: 'Which employee do you want to update?',
-            choices: lists.employeeList,
-            when: prev => prev.select === 'Update Employee Role'
-        },
-        {
-            type: 'list',
-            name: 'updateRoleRole',
-            message: 'What should their role be updated to?',
-            choices: lists.roleList,
-            when: prev => prev.select === 'Update Employee Role'
-        }
-    ])
+    return inquirer.prompt(questions)
     // queries and stuff are made here
     .then(results => {
         // breaking apart results into more manageable parts
