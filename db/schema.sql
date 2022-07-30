@@ -1,3 +1,5 @@
+CREATE DATABASE IF NOT EXISTS employee_tracker;
+
 USE employee_tracker;
 
 DROP TABLE IF EXISTS employee;
